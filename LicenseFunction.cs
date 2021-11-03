@@ -55,6 +55,31 @@ namespace License.Function
 
             return new OkObjectResult(result.Resource);
         }
+
+        [FunctionName("UpdateLicense")]
+        [OpenApiOperation(operationId: "Get")]
+        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiRequestBody("application/json", typeof(Models.License))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
+        public async Task<IActionResult> Update(
+            [HttpTrigger(AuthorizationLevel.Function, "put", Route = "License/{id}")] Models.License license,
+            ILogger log)
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            var result = await container.UpsertItemAsync<Models.License>(license, new PartitionKey("DynamicTemplate"));
+
+            if (result.StatusCode == HttpStatusCode.OK)
+            {
+                return new OkResult();
+            }
+            else
+            {
+                return new BadRequestObjectResult(result.StatusCode.ToString());
+            }
+
+
+        }
     }
 }
 
