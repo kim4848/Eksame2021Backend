@@ -21,8 +21,8 @@ namespace License.Models
         public int AllowedClientUsers { get; set; }
         public int AllowedCloudUsers { get; set; }
         public string CloudStatisticsKey { get; set; }
-        public IncludedFeaturesWrapper IncludedFeatures { get; set; }
-        public AddonInfoWrapper AddonInfos { get; set; }
+        public IncludedFeaturesWrapper IncludedFeatures { get; set; } = new IncludedFeaturesWrapper();
+        public AddonInfoWrapper AddonInfos { get; set; } = new AddonInfoWrapper();
 
 
         public static List<FeatureDTO<T>> GetAllFeatures<T>() where T : System.Enum
