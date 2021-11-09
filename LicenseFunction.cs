@@ -14,7 +14,6 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Authorization;
 
 namespace License.Function
 {
@@ -33,7 +32,7 @@ namespace License.Function
         [OpenApiRequestBody("application/json", typeof(CreateLicenseRequest))]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(CreateLicenseResponse), Description = "The OK response")]
         public async Task<IActionResult> Create(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] CreateLicenseRequest req, ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] CreateLicenseRequest req, ILogger log)
         {
 
             var newLicense = new Models.License() { Id = Guid.NewGuid().ToString(), CompanyName = req.CompanyName, DomainName = req.DomainName, CustomerId = req.CustomerId };
@@ -95,7 +94,7 @@ namespace License.Function
         [OpenApiRequestBody("application/json", typeof(Models.License))]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
         public async Task<IActionResult> Update(
-            [HttpTrigger(AuthorizationLevel.Function, "put", Route = "License")] Models.License license, ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "License")] Models.License license, ILogger log)
         {
 
             var result = await container.UpsertItemAsync<Models.License>(license, new PartitionKey("DynamicTemplate"));
@@ -111,7 +110,7 @@ namespace License.Function
         [OpenApiRequestBody("application/json", typeof(Models.License))]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
         public async Task<IActionResult> Delete(
-           [HttpTrigger(AuthorizationLevel.Function, "delete", Route = "License/{id}")] HttpRequest req, string id, ILogger log)
+           [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "License/{id}")] HttpRequest req, string id, ILogger log)
         {
 
             var result = await container.DeleteItemAsync<Models.License>(id, new PartitionKey("DynamicTemplate"));
