@@ -14,6 +14,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace License.Function
 {
@@ -35,11 +36,11 @@ namespace License.Function
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] CreateLicenseRequest req, ILogger log)
         {
 
-            var newLicense = new Models.License() { LicenseId = Guid.NewGuid().ToString(), CompanyName = req.CompanyName, DomainName = req.DomainName, CustomerId = req.CustomerId };
+            var newLicense = new Models.License() { Id = Guid.NewGuid().ToString(), CompanyName = req.CompanyName, DomainName = req.DomainName, CustomerId = req.CustomerId };
             var result = await container.CreateItemAsync(newLicense);
 
             if (result.StatusCode == HttpStatusCode.Created)
-                return new OkObjectResult(new CreateLicenseResponse() { LicenseId = newLicense.LicenseId });
+                return new OkObjectResult(new CreateLicenseResponse() { LicenseId = newLicense.Id });
             else
             {
                 log.LogError($"Create request for returned: {result.StatusCode}");
@@ -48,13 +49,14 @@ namespace License.Function
 
         }
 
+
         [FunctionName("GetLicense")]
         [OpenApiOperation(operationId: "Get")]
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "LicenseId")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Models.License), Description = "The OK response")]
         public async Task<IActionResult> Get(
-            [HttpTrigger(AuthorizationLevel.Function, "Get", Route = "License/{id}")] HttpRequest req, string id, ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "Get", Route = "License/{id}")] HttpRequest req, string id, ILogger log)
         {
 
             var result = await container.ReadItemAsync<Models.License>(id.ToString(), new PartitionKey("DynamicTemplate"));
@@ -74,7 +76,7 @@ namespace License.Function
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<Models.License>), Description = "The OK response")]
         public async Task<IActionResult> GetAll(
-           [HttpTrigger(AuthorizationLevel.Function, "Get", Route = "License")] HttpRequest req, ILogger log)
+           [HttpTrigger(AuthorizationLevel.Anonymous, "Get", Route = "License")] HttpRequest req, ILogger log)
         {
             var feedIterator = container.GetItemQueryIterator<Models.License>();
 

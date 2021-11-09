@@ -8,8 +8,7 @@ namespace License.Models
     public class License
     {
         [Newtonsoft.Json.JsonProperty(PropertyName = "id")]
-
-        public string LicenseId { get; set; }
+        public string Id { get; set; }
         public string Partitionkey { get; set; } = "DynamicTemplate";
         public string CompanyName { get; set; }
         public string CustomerId { get; set; }
