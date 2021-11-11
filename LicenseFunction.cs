@@ -1,5 +1,5 @@
-
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -13,144 +13,125 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace License.Function
-{
-    public class LicenseFunction
-    {
+namespace License.Function {
+    public class LicenseFunction {
         private readonly Container container;
 
-        public LicenseFunction(Container container)
-        {
+        public LicenseFunction (Container container) {
             this.container = container;
         }
 
-        [FunctionName("AddLicense")]
-        [OpenApiOperation(operationId: "Create")]
-        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiRequestBody("application/json", typeof(CreateLicenseRequest))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(CreateLicenseResponse), Description = "The OK response")]
-        public async Task<IActionResult> Create(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = null)] CreateLicenseRequest req, ILogger log)
-        {
+        [FunctionName ("AddLicense")]
+        [OpenApiOperation (operationId: "Create")]
+        [OpenApiSecurity ("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiRequestBody ("application/json", typeof (CreateLicenseRequest))]
+        [OpenApiResponseWithBody (statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType : typeof (CreateLicenseResponse), Description = "The OK response")]
+        public async Task<IActionResult> Create (
+            [HttpTrigger (AuthorizationLevel.Anonymous, "post", Route = null)] CreateLicenseRequest req, ILogger log) {
 
-            var newLicense = new Models.License() { Id = Guid.NewGuid().ToString(), CompanyName = req.CompanyName, DomainName = req.DomainName, CustomerId = req.CustomerId };
-            var result = await container.CreateItemAsync(newLicense);
+            var newLicense = new Models.License () { Id = Guid.NewGuid ().ToString (), CompanyName = req.CompanyName, DomainName = req.DomainName, CustomerId = req.CustomerId };
+            var result = await container.CreateItemAsync (newLicense);
 
             if (result.StatusCode == HttpStatusCode.Created)
-                return new OkObjectResult(new CreateLicenseResponse() { LicenseId = newLicense.Id });
-            else
-            {
-                log.LogError($"Create request for returned: {result.StatusCode}");
-                return new StatusCodeResult((int)result.StatusCode);
+                return new OkObjectResult (new CreateLicenseResponse () { LicenseId = newLicense.Id });
+            else {
+                log.LogError ($"Create request for returned: {result.StatusCode}");
+                return new StatusCodeResult ((int) result.StatusCode);
             }
 
         }
 
+        [FunctionName ("GetLicense")]
+        [OpenApiOperation (operationId: "Get")]
+        [OpenApiSecurity ("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiParameter (name: "id", In = ParameterLocation.Path, Required = true, Type = typeof (string), Description = "LicenseId")]
+        [OpenApiResponseWithBody (statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType : typeof (Models.License), Description = "The OK response")]
+        public async Task<IActionResult> Get (
+            [HttpTrigger (AuthorizationLevel.Anonymous, "Get", Route = "License/{id}")] HttpRequest req, string id, ILogger log) {
 
-        [FunctionName("GetLicense")]
-        [OpenApiOperation(operationId: "Get")]
-        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiParameter(name: "id", In = ParameterLocation.Path, Required = true, Type = typeof(string), Description = "LicenseId")]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(Models.License), Description = "The OK response")]
-        public async Task<IActionResult> Get(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "Get", Route = "License/{id}")] HttpRequest req, string id, ILogger log)
-        {
-
-            var result = await container.ReadItemAsync<Models.License>(id.ToString(), new PartitionKey("DynamicTemplate"));
+            var result = await container.ReadItemAsync<Models.License> (id.ToString (), new PartitionKey ("DynamicTemplate"));
 
             if (result.StatusCode == HttpStatusCode.OK)
-                return new OkObjectResult(result.Resource);
-            else
-            {
-                log.LogError($"Get request for id {id} returned: {result.StatusCode}");
-                return new StatusCodeResult((int)result.StatusCode);
+                return new OkObjectResult (result.Resource);
+            else {
+                log.LogError ($"Get request for id {id} returned: {result.StatusCode}");
+                return new StatusCodeResult ((int) result.StatusCode);
             }
 
         }
 
-        [FunctionName("GetLicenses")]
-        [OpenApiOperation(operationId: "GetAll")]
-        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(List<Models.License>), Description = "The OK response")]
-        public async Task<IActionResult> GetAll(
-           [HttpTrigger(AuthorizationLevel.Anonymous, "Get", Route = "License")] HttpRequest req, ILogger log)
-        {
-            var feedIterator = container.GetItemQueryIterator<Models.License>();
+        [FunctionName ("GetLicenses")]
+        [OpenApiOperation (operationId: "GetAll")]
+        [OpenApiSecurity ("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiResponseWithBody (statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType : typeof (List<Models.License>), Description = "The OK response")]
+        public async Task<IActionResult> GetAll (
+            [HttpTrigger (AuthorizationLevel.Anonymous, "Get", Route = "License")] HttpRequest req, ILogger log) {
+            var feedIterator = container.GetItemQueryIterator<Models.License> ();
 
-            var results = new List<Models.License>();
-            while (feedIterator.HasMoreResults)
-            {
-                results.AddRange(await feedIterator.ReadNextAsync());
+            var results = new List<Models.License> ();
+            while (feedIterator.HasMoreResults) {
+                results.AddRange (await feedIterator.ReadNextAsync ());
             }
 
-            return new OkObjectResult(results);
+            return new OkObjectResult (results);
         }
 
-        [FunctionName("UpdateLicense")]
-        [OpenApiOperation(operationId: "Update")]
-        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiRequestBody("application/json", typeof(Models.License))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
-        public async Task<IActionResult> Update(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "License")] Models.License license, ILogger log)
-        {
+        [FunctionName ("UpdateLicense")]
+        [OpenApiOperation (operationId: "Update")]
+        [OpenApiSecurity ("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiRequestBody ("application/json", typeof (Models.License))]
+        [OpenApiResponseWithBody (statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType : typeof (OkResult), Description = "The OK response")]
+        public async Task<IActionResult> Update (
+            [HttpTrigger (AuthorizationLevel.Anonymous, "put", Route = "License")] Models.License license, ILogger log) {
 
-            var result = await container.UpsertItemAsync<Models.License>(license, new PartitionKey("DynamicTemplate"));
-            if ((int)result.StatusCode > 299)
-                log.LogError($"Update request returned: {result.StatusCode}");
+            var result = await container.UpsertItemAsync<Models.License> (license, new PartitionKey ("DynamicTemplate"));
+            if ((int) result.StatusCode > 299)
+                log.LogError ($"Update request returned: {result.StatusCode}");
 
-            return new StatusCodeResult((int)result.StatusCode);
+            return new StatusCodeResult ((int) result.StatusCode);
         }
 
-        [FunctionName("DeleteLicense")]
-        [OpenApiOperation(operationId: "Delete")]
-        [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
-        [OpenApiRequestBody("application/json", typeof(Models.License))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
-        public async Task<IActionResult> Delete(
-           [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "License/{id}")] HttpRequest req, string id, ILogger log)
-        {
+        [FunctionName ("DeleteLicense")]
+        [OpenApiOperation (operationId: "Delete")]
+        [OpenApiSecurity ("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
+        [OpenApiRequestBody ("application/json", typeof (Models.License))]
+        [OpenApiResponseWithBody (statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType : typeof (OkResult), Description = "The OK response")]
+        public async Task<IActionResult> Delete (
+            [HttpTrigger (AuthorizationLevel.Anonymous, "delete", Route = "License/{id}")] HttpRequest req, string id, ILogger log) {
 
-            var result = await container.DeleteItemAsync<Models.License>(id, new PartitionKey("DynamicTemplate"));
-            if ((int)result.StatusCode > 299)
-                log.LogError($"Delete request returned: {result.StatusCode}");
+            var result = await container.DeleteItemAsync<Models.License> (id, new PartitionKey ("DynamicTemplate"));
+            if ((int) result.StatusCode > 299)
+                log.LogError ($"Delete request returned: {result.StatusCode}");
 
-            return new StatusCodeResult((int)result.StatusCode);
+            return new StatusCodeResult ((int) result.StatusCode);
         }
-        [FunctionName("Validate")]
-        [OpenApiOperation(operationId: "get")]
-        [OpenApiRequestBody("application/json", typeof(ValidationResponse))]
-        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
-        public async Task<IActionResult> Validate(
-           [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Validate/{id}")] HttpRequest req, string id, ILogger log)
-        {
 
-            var result = await container.ReadItemAsync<Models.License>(id.ToString(), new PartitionKey("DynamicTemplate"));
+        [FunctionName ("Validate")]
+        [OpenApiOperation (operationId: "get")]
+        [OpenApiParameter (name: "id", In = ParameterLocation.Path, Required = true, Type = typeof (string), Description = "LicenseId")]
+        [OpenApiResponseWithBody (statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType : typeof (OkResult), Description = "The OK response")]
+        public async Task<IActionResult> Validate (
+            [HttpTrigger (AuthorizationLevel.Anonymous, "get", Route = "Validate/{id}")] HttpRequest req, string id, ILogger log) {
 
-            var x = JsonConvert.SerializeObject(result);
-            if (result.StatusCode == HttpStatusCode.OK)
-            {
-                ValidationResponse response = new ValidationResponse()
-                {
-                    License = Base64Encode(JsonConvert.SerializeObject(result))
+            var result = await container.ReadItemAsync<Models.License> (id.ToString (), new PartitionKey ("DynamicTemplate"));
+
+            
+            if (result.StatusCode == HttpStatusCode.OK) {
+                ValidationResponse response = new ValidationResponse () {
+                License = Base64Encode (JsonConvert.SerializeObject (result.Resource))
                 };
-                return new OkObjectResult(response);
-            }
-            else
-            {
-                log.LogError($"Get request for id {id} returned: {result.StatusCode}");
-                return new StatusCodeResult((int)result.StatusCode);
+                return new OkObjectResult (response);
+            } else {
+                log.LogError ($"Get request for id {id} returned: {result.StatusCode}");
+                return new StatusCodeResult ((int) result.StatusCode);
             }
         }
 
-        public static string Base64Encode(string plainText)
-        {
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-            return System.Convert.ToBase64String(plainTextBytes);
+        public static string Base64Encode (string plainText) {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes (plainText);
+            return System.Convert.ToBase64String (plainTextBytes);
         }
     }
 }
-
