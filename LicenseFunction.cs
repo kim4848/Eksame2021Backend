@@ -125,7 +125,7 @@ namespace License.Function
         [OpenApiRequestBody("application/json", typeof(ValidationResponse))]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
         public async Task<IActionResult> Validate(
-           [HttpTrigger(AuthorizationLevel.Anonymous, "validate", Route = "Validate/{id}")] HttpRequest req, string id, ILogger log)
+           [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Validate/{id}")] HttpRequest req, string id, ILogger log)
         {
 
             var result = await container.ReadItemAsync<Models.License>(id.ToString(), new PartitionKey("DynamicTemplate"));
