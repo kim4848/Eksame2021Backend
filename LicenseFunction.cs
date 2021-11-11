@@ -14,6 +14,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace License.Function
 {
@@ -118,6 +119,37 @@ namespace License.Function
                 log.LogError($"Delete request returned: {result.StatusCode}");
 
             return new StatusCodeResult((int)result.StatusCode);
+        }
+        [FunctionName("Validate")]
+        [OpenApiOperation(operationId: "get")]
+        [OpenApiRequestBody("application/json", typeof(ValidationResponse))]
+        [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(OkResult), Description = "The OK response")]
+        public async Task<IActionResult> Validate(
+           [HttpTrigger(AuthorizationLevel.Anonymous, "validate", Route = "Validate/{id}")] HttpRequest req, string id, ILogger log)
+        {
+
+            var result = await container.ReadItemAsync<Models.License>(id.ToString(), new PartitionKey("DynamicTemplate"));
+
+            var x = JsonConvert.SerializeObject(result);
+            if (result.StatusCode == HttpStatusCode.OK)
+            {
+                ValidationResponse response = new ValidationResponse()
+                {
+                    License = Base64Encode(JsonConvert.SerializeObject(result))
+                };
+                return new OkObjectResult(response);
+            }
+            else
+            {
+                log.LogError($"Get request for id {id} returned: {result.StatusCode}");
+                return new StatusCodeResult((int)result.StatusCode);
+            }
+        }
+
+        public static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
         }
     }
 }
