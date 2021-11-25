@@ -3,6 +3,7 @@
   "Values": {
     "AzureWebJobsStorage": "",
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "CosmosDBConnection":"AccountEndpoint=https://license.documents.azure.com:443/;AccountKey=KNwSK1JJQYBhyz5U0zf0gCPtbWWZZNvXX3syQZuHVToq9AK1U8l5IDmL1rDCdacX187Gs5pJbGDsR0U8nxcSig==;"
-  }
+    "CosmosDBConnection":"AccountEndpoint=https://license.documents.azure.com:443/;AccountKey=x7xLEOil8bBovhyF2z4HYKZX5n4wVL4vhAQTSXS3r6xZjAl5Hf9x3MMGto0MPn94m9cQrHsxw88145CIg23jsA==;" }, "Host": {
+      "CORS": "*"
+    }
 }

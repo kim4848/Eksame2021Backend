@@ -4,9 +4,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Azure.Cosmos.Table;
+
 
 
 [assembly: FunctionsStartup(typeof(StartUp))]
