@@ -1,9 +1,0 @@
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "",
-    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
-    "CosmosDBConnection":"AccountEndpoint=https://license.documents.azure.com:443/;AccountKey=x7xLEOil8bBovhyF2z4HYKZX5n4wVL4vhAQTSXS3r6xZjAl5Hf9x3MMGto0MPn94m9cQrHsxw88145CIg23jsA==;" }, "Host": {
-      "CORS": "*"
-    }
-}
